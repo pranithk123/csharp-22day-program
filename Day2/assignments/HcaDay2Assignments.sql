@@ -92,35 +92,33 @@ CREATE PROCEDURE usp_ExecutiveDashboard
 AS
 BEGIN
 
-  
-    SELECT
-        'Total Active Patients' AS Metric,
-        COUNT(*) AS Value
+    SELECT 'Total Active Patients' AS Metric, COUNT(*) AS Value
     FROM Patient
     WHERE IsActive = 1
 
     UNION ALL
 
-  
-    SELECT
-        CONCAT('Top Dept: ', d.Name) AS Metric,
-        COUNT(e.EncounterId) AS Value
-    FROM Encounter e
-    JOIN Department d ON e.DepartmentId = d.DepartmentId
-    GROUP BY d.Name
-    ORDER BY Value DESC
-    OFFSET 0 ROWS FETCH NEXT 5 ROWS ONLY
+    SELECT 'Denied Claims', COUNT(*)
+    FROM Claim
+    WHERE Status = 'Denied'
 
     UNION ALL
 
-   
-    SELECT
-        'Denied Claims' AS Metric,
-        COUNT(*) AS Value
-    FROM Claim
-    WHERE Status = 'Denied';
+    SELECT CONCAT('Top Dept: ', Name), EncounterCount
+    FROM (
+        SELECT d.Name,
+               COUNT(e.EncounterId) AS EncounterCount,
+               ROW_NUMBER() OVER (ORDER BY COUNT(e.EncounterId) DESC) AS rn
+        FROM Encounter e
+        JOIN Department d ON e.DepartmentId = d.DepartmentId
+        GROUP BY d.Name
+    ) t
+    WHERE rn <= 5;
 
 END;
+
+
+
 
 
 

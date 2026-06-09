@@ -17,7 +17,8 @@ while (true)
     Console.WriteLine("4. Eager Loading Demo");
     Console.WriteLine("5. Explicit Loading Demo");
     Console.WriteLine("6. AsNoTracking Demo");
-    Console.WriteLine("7. Exit");
+    Console.WriteLine("7. Revenew at Risk");
+    Console.WriteLine("8. Exit");
 
     Console.WriteLine();
     Console.Write("Choose Option: ");
@@ -51,6 +52,10 @@ while (true)
             break;
 
         case "7":
+            RevenueAtRiskDashboard();
+            break;
+
+        case "8":
             return;
 
         default:
@@ -87,6 +92,8 @@ static void ShowPatient()
     Console.WriteLine($"City       : {patient.City}");
     Console.WriteLine($"Active     : {patient.IsActive}");
 }
+
+
 
 static void ShowEncounters()
 {
@@ -269,6 +276,65 @@ static void ExplicitLoadingDemo()
 
     Console.WriteLine(
         $"Elapsed Time      : {stopwatch.ElapsedMilliseconds} ms");
+}
+
+static void RevenueAtRiskDashboard()
+{
+    using var db = new CareBridgeContext();
+
+    Console.WriteLine();
+    Console.WriteLine("REVENUE AT RISK DASHBOARD");
+    Console.WriteLine("------------------------------------------------");
+
+    Stopwatch stopwatch = Stopwatch.StartNew();
+
+
+    var summary =
+        db.Claims
+          .AsNoTracking()
+          .GroupBy(c => c.Status)
+          .Select(g => new
+          {
+              Status = g.Key,
+              ClaimCount = g.Count(),
+              TotalBilled = g.Sum(x => x.BilledAmount),
+              TotalReimbursed = g.Sum(x => x.ReimbursedAmt),
+              Gap = g.Sum(x => x.BilledAmount - x.ReimbursedAmt)
+          })
+          .ToList();
+
+
+    // Revenue at Risk (NOT Paid)
+    var revenueAtRisk =
+        db.Claims
+          .AsNoTracking()
+          .Where(c => c.Status != "Paid")
+          .Sum(c => c.BilledAmount);
+
+    stopwatch.Stop();
+
+    Console.WriteLine();
+    Console.WriteLine("STATUS SUMMARY");
+
+    foreach (var item in summary)
+    {
+        Console.WriteLine(
+            $"{item.Status,-12} | Count: {item.ClaimCount,-5} | " +
+            $"Billed: {item.TotalBilled,-10} | " +
+            $"Reimb: {item.TotalReimbursed,-10} | " +
+            $"Gap: {item.Gap}"
+        );
+    }
+
+    Console.WriteLine();
+    Console.WriteLine("------------------------------------------------");
+
+    Console.WriteLine($"Revenue At Risk : {revenueAtRisk}");
+
+    Console.WriteLine();
+    Console.WriteLine($"Tracked Entities: {db.ChangeTracker.Entries().Count()}"); // ✅ should be 0
+
+    Console.WriteLine($"Elapsed Time    : {stopwatch.ElapsedMilliseconds} ms");
 }
 
 static void AsNoTrackingDemo()
