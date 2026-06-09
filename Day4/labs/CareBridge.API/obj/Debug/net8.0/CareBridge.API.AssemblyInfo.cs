@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CareBridge.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3f3fca1160e999780831d8b452a741c67a63b0c2")]
 [assembly: System.Reflection.AssemblyProductAttribute("CareBridge.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CareBridge.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
